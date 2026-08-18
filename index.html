@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Slot Radar — Agentic AI Booking Agent</title>
+  <meta name="description" content="Intelligent slot availability radar for visa appointments and Tatkal bookings. AI-powered monitoring with instant auto-fill and human-in-the-loop verification.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+  <!-- ═══════════════ HEADER ═══════════════ -->
+  <header id="app-header">
+    <div class="header-left">
+      <div class="logo">
+        <svg class="logo-icon" viewBox="0 0 40 40" width="36" height="36">
+          <circle cx="20" cy="20" r="18" fill="none" stroke="var(--cyan)" stroke-width="1.5" opacity="0.3"/>
+          <circle cx="20" cy="20" r="12" fill="none" stroke="var(--cyan)" stroke-width="1" opacity="0.5"/>
+          <circle cx="20" cy="20" r="6" fill="none" stroke="var(--cyan)" stroke-width="0.8" opacity="0.7"/>
+          <circle cx="20" cy="20" r="2.5" fill="var(--cyan)"/>
+          <line x1="20" y1="20" x2="20" y2="3" stroke="var(--cyan)" stroke-width="2" stroke-linecap="round" class="radar-hand"/>
+        </svg>
+        <h1>SLOT RADAR</h1>
+        <span class="version-badge">AI v2.0</span>
+      </div>
+    </div>
+    <div class="header-center">
+      <div class="status-indicator" id="status-indicator">
+        <span class="status-dot" id="status-dot"></span>
+        <span class="status-text" id="status-text">Standby</span>
+      </div>
+    </div>
+    <div class="header-right">
+      <button class="btn btn-primary" id="btn-start">
+        <span class="btn-icon">▶</span>
+        <span id="btn-start-text">Start Monitoring</span>
+      </button>
+      <button class="btn btn-ghost" id="btn-notification" title="Enable notifications">🔔</button>
+    </div>
+  </header>
+
+  <!-- ═══════════════ MAIN DASHBOARD ═══════════════ -->
+  <main id="dashboard">
+
+    <!-- ── Stats Row ── -->
+    <section class="stats-row" id="stats-row">
+      <div class="stat-card" data-stat="monitors">
+        <div class="stat-icon-wrap"><span class="stat-icon">📡</span></div>
+        <div class="stat-body">
+          <div class="stat-value" id="stat-monitors">0</div>
+          <div class="stat-label">Active Monitors</div>
+        </div>
+        <div class="stat-ring"></div>
+      </div>
+      <div class="stat-card" data-stat="slots">
+        <div class="stat-icon-wrap"><span class="stat-icon">🎯</span></div>
+        <div class="stat-body">
+          <div class="stat-value" id="stat-slots">0</div>
+          <div class="stat-label">Slots Found</div>
+        </div>
+        <div class="stat-ring"></div>
+      </div>
+      <div class="stat-card" data-stat="fills">
+        <div class="stat-icon-wrap"><span class="stat-icon">⚡</span></div>
+        <div class="stat-body">
+          <div class="stat-value" id="stat-fills">0</div>
+          <div class="stat-label">Auto-Fills</div>
+        </div>
+        <div class="stat-ring"></div>
+      </div>
+      <div class="stat-card" data-stat="rate">
+        <div class="stat-icon-wrap"><span class="stat-icon">✅</span></div>
+        <div class="stat-body">
+          <div class="stat-value" id="stat-rate">—</div>
+          <div class="stat-label">Success Rate</div>
+        </div>
+        <div class="stat-ring"></div>
+      </div>
+    </section>
+
+    <!-- ── Radar + Portals ── -->
+    <section class="main-grid">
+      <div class="radar-panel glass-card">
+        <div class="card-header">
+          <h2>🛰️ Availability Radar</h2>
+          <span class="scan-badge" id="scan-count">Scans: 0</span>
+        </div>
+        <div class="radar-wrap">
+          <canvas id="radar-canvas" width="440" height="440"></canvas>
+          <div class="radar-labels" id="radar-labels"></div>
+        </div>
+        <div class="radar-legend">
+          <span class="legend-item"><span class="legend-dot dot-green"></span>Available</span>
+          <span class="legend-item"><span class="legend-dot dot-amber"></span>Checking</span>
+          <span class="legend-item"><span class="legend-dot dot-red"></span>No Slots</span>
+          <span class="legend-item"><span class="legend-dot dot-blue"></span>Queued</span>
+        </div>
+      </div>
+
+      <div class="portals-panel">
+        <div class="card-header">
+          <h2>📋 Monitored Portals</h2>
+        </div>
+        <div class="portal-grid" id="portal-grid">
+          <!-- JS-generated portal cards -->
+        </div>
+      </div>
+    </section>
+
+    <!-- ── Profiles + Auto-Fill Demo ── -->
+    <section class="secondary-grid">
+      <div class="profiles-panel glass-card">
+        <div class="card-header">
+          <h2>👤 Traveller Profiles</h2>
+          <button class="btn btn-sm btn-primary" id="btn-add-profile">+ Add Profile</button>
+        </div>
+        <div class="profiles-list" id="profiles-list">
+          <!-- JS-generated -->
+        </div>
+      </div>
+
+      <div class="autofill-panel glass-card">
+        <div class="card-header">
+          <h2>⚡ Auto-Fill Speed Demo</h2>
+          <button class="btn btn-sm btn-accent" id="btn-run-demo">Run Demo</button>
+        </div>
+        <div class="autofill-arena" id="autofill-arena">
+          <div class="demo-lane human-lane">
+            <div class="lane-header">
+              <span class="lane-icon">👤</span>
+              <span class="lane-title">Human</span>
+              <span class="lane-speed">~60 WPM</span>
+            </div>
+            <div class="demo-form" id="human-form"></div>
+            <div class="demo-timer" id="human-timer">0.00s</div>
+          </div>
+          <div class="demo-divider">
+            <span class="vs-badge">VS</span>
+          </div>
+          <div class="demo-lane agent-lane">
+            <div class="lane-header">
+              <span class="lane-icon">🤖</span>
+              <span class="lane-title">Slot Radar AI</span>
+              <span class="lane-speed">~6,000 WPM</span>
+            </div>
+            <div class="demo-form" id="agent-form"></div>
+            <div class="demo-timer" id="agent-timer">0.00s</div>
+          </div>
+        </div>
+        <div class="speed-result" id="speed-result">
+          <span class="speed-x" id="speed-x">—</span>
+          <span class="speed-label">faster than human</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── Activity Log ── -->
+    <section class="log-panel glass-card">
+      <div class="card-header">
+        <h2>📜 Agent Activity Log</h2>
+        <div class="log-controls">
+          <div class="log-filters">
+            <button class="filter-btn active" data-filter="all">All</button>
+            <button class="filter-btn" data-filter="info">Info</button>
+            <button class="filter-btn" data-filter="success">Success</button>
+            <button class="filter-btn" data-filter="alert">Alerts</button>
+          </div>
+          <button class="btn btn-sm btn-ghost" id="btn-clear-log">Clear</button>
+        </div>
+      </div>
+      <div class="log-scroll" id="log-scroll">
+        <!-- JS-generated log entries -->
+      </div>
+    </section>
+  </main>
+
+  <!-- ═══════════════ MODALS ═══════════════ -->
+
+  <!-- Slot Found -->
+  <div class="modal-overlay" id="modal-slot">
+    <div class="modal modal-slot">
+      <div class="slot-burst" id="slot-burst"></div>
+      <div class="modal-icon-ring pulse-ring">🎯</div>
+      <h2 class="modal-title glow-text">SLOT DETECTED!</h2>
+      <p class="modal-sub" id="slot-portal-name">VFS Global — UK Tourist Visa</p>
+      <div class="slot-info" id="slot-info">
+        <div class="info-row"><span class="info-label">Date</span><span class="info-value" id="slot-date">—</span></div>
+        <div class="info-row"><span class="info-label">Time</span><span class="info-value" id="slot-time">—</span></div>
+        <div class="info-row"><span class="info-label">Location</span><span class="info-value" id="slot-location">—</span></div>
+        <div class="info-row"><span class="info-label">Category</span><span class="info-value" id="slot-category">—</span></div>
+      </div>
+      <div class="modal-countdown">
+        <span>Auto-filling in</span>
+        <span class="countdown-num" id="fill-countdown">5</span>
+      </div>
+      <button class="btn btn-lg btn-success" id="btn-proceed-fill">⚡ Auto-Fill Now</button>
+      <button class="btn btn-sm btn-ghost mt-8" id="btn-dismiss-slot">Dismiss</button>
+    </div>
+  </div>
+
+  <!-- Auto-Fill Progress -->
+  <div class="modal-overlay" id="modal-filling">
+    <div class="modal modal-filling">
+      <div class="modal-icon-ring">📝</div>
+      <h2 class="modal-title">Auto-Filling Details…</h2>
+      <div class="fill-progress-wrap">
+        <div class="fill-fields" id="fill-fields">
+          <!-- JS-generated fields being filled -->
+        </div>
+        <div class="fill-bar-track">
+          <div class="fill-bar" id="fill-bar"></div>
+        </div>
+        <div class="fill-percent" id="fill-percent">0%</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- OTP / Payment Pause -->
+  <div class="modal-overlay" id="modal-otp">
+    <div class="modal modal-otp">
+      <div class="modal-icon-ring otp-ring">🔐</div>
+      <h2 class="modal-title">Human Verification Required</h2>
+      <p class="modal-sub">The AI agent has paused. Complete OTP &amp; payment manually.</p>
+      <div class="otp-steps">
+        <div class="otp-step done">
+          <span class="step-dot">✓</span><span class="step-label">Slot Detected</span>
+        </div>
+        <div class="step-line done"></div>
+        <div class="otp-step done">
+          <span class="step-dot">✓</span><span class="step-label">Details Filled</span>
+        </div>
+        <div class="step-line active-line"></div>
+        <div class="otp-step current">
+          <span class="step-dot blink">⏸</span><span class="step-label">OTP / Payment</span>
+        </div>
+        <div class="step-line"></div>
+        <div class="otp-step">
+          <span class="step-dot">○</span><span class="step-label">Confirmed</span>
+        </div>
+      </div>
+      <div class="otp-timer-wrap">
+        <span class="otp-timer-label">Slot held for</span>
+        <span class="otp-timer" id="otp-timer">05:00</span>
+      </div>
+      <button class="btn btn-lg btn-primary" id="btn-otp-done">🔓 I've Completed Verification</button>
+    </div>
+  </div>
+
+  <!-- Success -->
+  <div class="modal-overlay" id="modal-success">
+    <div class="modal modal-success">
+      <div class="modal-icon-ring success-ring">🎉</div>
+      <h2 class="modal-title glow-text-green">BOOKING CONFIRMED!</h2>
+      <p class="modal-sub">The entire workflow completed successfully.</p>
+      <div class="success-summary" id="success-summary"></div>
+      <button class="btn btn-lg btn-success" id="btn-success-close">Continue Monitoring</button>
+    </div>
+  </div>
+
+  <!-- Add Profile Modal -->
+  <div class="modal-overlay" id="modal-profile">
+    <div class="modal modal-profile">
+      <h2 class="modal-title">Add Traveller Profile</h2>
+      <form id="profile-form" autocomplete="off">
+        <div class="form-grid">
+          <div class="form-group">
+            <label for="pf-name">Full Name *</label>
+            <input type="text" id="pf-name" placeholder="Rahul Sharma" required>
+          </div>
+          <div class="form-group">
+            <label for="pf-passport">Passport / ID Number *</label>
+            <input type="text" id="pf-passport" placeholder="M1234567" required>
+          </div>
+          <div class="form-group">
+            <label for="pf-dob">Date of Birth *</label>
+            <input type="date" id="pf-dob" required>
+          </div>
+          <div class="form-group">
+            <label for="pf-email">Email *</label>
+            <input type="email" id="pf-email" placeholder="rahul@email.com" required>
+          </div>
+          <div class="form-group">
+            <label for="pf-phone">Phone *</label>
+            <input type="tel" id="pf-phone" placeholder="+91 98765 43210" required>
+          </div>
+          <div class="form-group">
+            <label for="pf-nationality">Nationality *</label>
+            <input type="text" id="pf-nationality" placeholder="Indian" required>
+          </div>
+        </div>
+        <div class="form-actions">
+          <button type="button" class="btn btn-ghost" id="btn-cancel-profile">Cancel</button>
+          <button type="submit" class="btn btn-primary">💾 Save Profile</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Background particles (decorative) -->
+  <div class="bg-particles" id="bg-particles"></div>
+
+  <script src="app.js"></script>
+</body>
+</html>
